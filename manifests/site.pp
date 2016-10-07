@@ -1,3 +1,3 @@
 node default {
-    include PuppetEnterpriseRefresh
+    include refresh
 }
