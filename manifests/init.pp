@@ -1,7 +1,9 @@
 # Puppet Enterprise Refresh module
-class refresh {
+class refresh(
+    $file_contents = hiera('text')
+) {
     file { '/home/text.txt':
         ensure  => present,
-        content => hiera('text')
+        content => $file_contents
     }
 }
