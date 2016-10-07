@@ -2,15 +2,41 @@
 
 Starter Project for Puppet, Hiera, and RSpec/ServerSpec on a CentOS 6.6 Vagrant box
 
-## RSpec Puppet / ServerSpec
+## Gems
 
-Setup instructions for RSpec Puppet: http://rspec-puppet.com/setup/
+Requires the following gems be installed:
 
-Requires a `/spec` folder with {classes, defines, hosts, functions} subfolders. A `site.pp` file MUST be preset in `/spec/fixtures/manifests`
+    gem puppet
+    gem rspec-puppet
+    gem serverspec
 
-To make Puppet's manifest autoloader work correctly:
+## Testing Hiera
 
-    $ mkdir spec/fixtures/modules/<your module name>
-    $ cd spec/fixtures/modules/<your module name>
-    $ for i in files lib manifests templates; do ln -s ../../../../$i $i; done
-    $ cd ../../../../
+A module that relies on Hiera data should include those definitions in its class params:
+
+    class refresh(
+        $file_contents = hiera('text')
+    ) {
+        file { '/home/text.txt':
+            ensure  => present,
+            content => $file_contents
+        }
+    }
+
+Thus the spec can look like the following:
+
+    require 'spec_helper'
+
+    describe 'refresh' do
+      # ...
+
+      context 'with file_contents => Hi' do
+        let(:params) { 
+          { :file_contents => 'Hi' }
+        }
+
+        it { is_expected.to contain_file('/home/text.txt').with_content('Hi') }
+      end
+    end
+
+However, currently the Hiera item "text" must exist somewhere. This is found in a file `spec/fixtures/hiera/default.yaml`
